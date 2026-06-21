@@ -3,13 +3,23 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import dotenv from "dotenv";
 import { EventSource } from "eventsource";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Polyfill EventSource for Node.js environments (needed for SSE Client Transport)
 if (typeof global.EventSource === "undefined") {
   global.EventSource = EventSource;
 }
 
-dotenv.config();
+let envPath;
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  envPath = path.resolve(__dirname, "../.env");
+} catch (e) {
+  envPath = "./.env";
+}
+dotenv.config({ path: envPath });
 
 class MCPClientManager {
   constructor() {

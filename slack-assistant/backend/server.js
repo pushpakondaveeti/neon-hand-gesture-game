@@ -4,7 +4,18 @@ import dotenv from "dotenv";
 import { mcpClientManager } from "./mcp-client.js";
 import { runSlackAgent } from "./agent.js";
 
-dotenv.config();
+import path from "path";
+import { fileURLToPath } from "url";
+
+let envPath;
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  envPath = path.resolve(__dirname, "../.env");
+} catch (e) {
+  envPath = "./.env";
+}
+dotenv.config({ path: envPath });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
