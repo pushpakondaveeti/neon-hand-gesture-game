@@ -512,15 +512,41 @@ export default function App() {
         <div className="modal-backdrop">
           <div className="modal-content glass-panel">
             <h2>⚙️ Slack MCP & LLM Configuration</h2>
-            <p className="modal-desc">
-              Change local transport options or tokens. Saving will automatically reconnect the backend MCP client.
-            </p>
-            <form onSubmit={handleSaveSettings}>
+            
+            {/* Section 1: Frontend Proxy URL */}
+            <div style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "20px", marginBottom: "20px" }}>
               <div className="form-group">
                 <label>BACKEND API URL (Optional - e.g. https://xxxx.ngrok-free.dev)</label>
-                <input type="url" value={tempBackendUrl} onChange={(e) => setTempBackendUrl(e.target.value)} placeholder="Leave empty for Netlify serverless functions" />
+                <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                  <input 
+                    type="url" 
+                    value={tempBackendUrl} 
+                    onChange={(e) => setTempBackendUrl(e.target.value)} 
+                    placeholder="Leave empty for Netlify serverless functions" 
+                    style={{ flex: 1, padding: "8px", borderRadius: "4px", border: "1px solid #444", background: "#222", color: "#fff" }} 
+                  />
+                  <button 
+                    type="button" 
+                    className="glow-btn" 
+                    style={{ padding: "8px 16px", borderRadius: "4px" }}
+                    onClick={() => {
+                      localStorage.setItem("slack_assistant_backend_url", tempBackendUrl);
+                      setBackendUrl(tempBackendUrl);
+                      alert("Backend URL saved! Connecting...");
+                      setTimeout(() => {
+                        fetchHealth();
+                        fetchTools();
+                      }, 100);
+                    }}
+                  >
+                    Save URL
+                  </button>
+                </div>
               </div>
+            </div>
 
+            {/* Section 2: Backend Credentials Form */}
+            <form onSubmit={handleSaveSettings}>
               <div className="form-group">
                 <label>GEMINI API KEY</label>
                 <input type="password" value={settingsForm.geminiApiKey} onChange={(e) => setSettingsForm({ ...settingsForm, geminiApiKey: e.target.value })} placeholder="Keep empty to preserve current value" />
