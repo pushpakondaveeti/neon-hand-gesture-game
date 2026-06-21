@@ -3,12 +3,11 @@
   publish = "frontend/dist"
   functions = "netlify/functions"
 
-# Proxy frontend API requests directly to our local backend via ngrok
+# Proxy frontend API requests to our Netlify Serverless Function
 [[redirects]]
   from = "/api/*"
-  to = "https://tycoon-anybody-online.ngrok-free.dev/api/:splat"
+  to = "/.netlify/functions/api/api/:splat"
   status = 200
-  force = true
 
 # Support standard single-page React router path history fallbacks
 [[redirects]]

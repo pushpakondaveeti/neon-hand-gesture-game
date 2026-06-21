@@ -21,6 +21,17 @@ export default function App() {
   ]);
   const [promptInput, setPromptInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [backendUrl, setBackendUrl] = useState(localStorage.getItem("slack_assistant_backend_url") || "");
+  const [tempBackendUrl, setTempBackendUrl] = useState(localStorage.getItem("slack_assistant_backend_url") || "");
+
+  const getApiUrl = (endpoint) => {
+    if (backendUrl) {
+      const base = backendUrl.replace(/\/$/, "");
+      return `${base}${endpoint}`;
+    }
+    return endpoint;
+  };
   
   // Health & MCP Diagnostics State
   const [health, setHealth] = useState({
@@ -64,7 +75,7 @@ export default function App() {
 
   const fetchHealth = async () => {
     try {
-      const res = await fetch("/api/health");
+      const res = await fetch(getApiUrl("/api/health"));
       const data = await res.json();
       if (data.mcp) {
         setHealth(data.mcp);
@@ -85,7 +96,7 @@ export default function App() {
 
   const fetchTools = async () => {
     try {
-      const res = await fetch("/api/mcp/tools");
+      const res = await fetch(getApiUrl("/api/mcp/tools"));
       const data = await res.json();
       if (data.success) {
         setTools(data.tools || []);
@@ -110,7 +121,7 @@ export default function App() {
       .map(m => ({ role: m.role, content: m.content }));
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(getApiUrl("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: promptText, history })
@@ -157,7 +168,7 @@ export default function App() {
     );
 
     try {
-      const res = await fetch("/api/slack/send-confirm", {
+      const res = await fetch(getApiUrl("/api/slack/send-confirm"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mcpTool, args })
@@ -212,7 +223,14 @@ export default function App() {
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/settings/update", {
+      // Save backend URL locally
+      localStorage.setItem("slack_assistant_backend_url", tempBackendUrl);
+      setBackendUrl(tempBackendUrl);
+
+      const targetBase = tempBackendUrl ? tempBackendUrl.replace(/\/$/, "") : "";
+      const updateEndpoint = targetBase ? `${targetBase}/api/settings/update` : "/api/settings/update";
+
+      const res = await fetch(updateEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settingsForm)
@@ -221,8 +239,11 @@ export default function App() {
       if (data.success) {
         alert("Settings updated! MCP Client reconnected.");
         setShowSettings(false);
-        fetchHealth();
-        fetchTools();
+        // Refresh with new URL
+        setTimeout(() => {
+          fetchHealth();
+          fetchTools();
+        }, 100);
       } else {
         throw new Error(data.error);
       }
@@ -495,6 +516,11 @@ export default function App() {
               Change local transport options or tokens. Saving will automatically reconnect the backend MCP client.
             </p>
             <form onSubmit={handleSaveSettings}>
+              <div className="form-group">
+                <label>BACKEND API URL (Optional - e.g. https://xxxx.ngrok-free.dev)</label>
+                <input type="url" value={tempBackendUrl} onChange={(e) => setTempBackendUrl(e.target.value)} placeholder="Leave empty for Netlify serverless functions" />
+              </div>
+
               <div className="form-group">
                 <label>GEMINI API KEY</label>
                 <input type="password" value={settingsForm.geminiApiKey} onChange={(e) => setSettingsForm({ ...settingsForm, geminiApiKey: e.target.value })} placeholder="Keep empty to preserve current value" />
