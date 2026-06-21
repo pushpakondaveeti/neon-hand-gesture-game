@@ -79,7 +79,10 @@ export default function App() {
         ? (overrideUrl ? `${overrideUrl.replace(/\/$/, "")}/api/health` : "/api/health") 
         : getApiUrl("/api/health");
       const res = await fetch(url, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: { 
+          "ngrok-skip-browser-warning": "true",
+          "Bypass-Tunnel-Reminder": "true"
+        }
       });
       const data = await res.json();
       if (data.mcp) {
@@ -105,7 +108,10 @@ export default function App() {
         ? (overrideUrl ? `${overrideUrl.replace(/\/$/, "")}/api/mcp/tools` : "/api/mcp/tools") 
         : getApiUrl("/api/mcp/tools");
       const res = await fetch(url, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: { 
+          "ngrok-skip-browser-warning": "true",
+          "Bypass-Tunnel-Reminder": "true"
+        }
       });
       const data = await res.json();
       if (data.success) {
@@ -135,7 +141,8 @@ export default function App() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
+          "Bypass-Tunnel-Reminder": "true"
         },
         body: JSON.stringify({ prompt: promptText, history })
       });
@@ -185,7 +192,8 @@ export default function App() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
+          "Bypass-Tunnel-Reminder": "true"
         },
         body: JSON.stringify({ mcpTool, args })
       });
@@ -250,7 +258,8 @@ export default function App() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
+          "Bypass-Tunnel-Reminder": "true"
         },
         body: JSON.stringify(settingsForm)
       });
