@@ -758,6 +758,7 @@ class GameEngine {
     this.lives = 3;
     this.level = 1;
     this.highScore = parseInt(localStorage.getItem('aeroglow_highscore') || '0');
+    this.waitingForInitialHand = false;
     
     // Dynamic lists & object pools (to prevent Garbage Collector spikes)
     this.player = new Player();
@@ -915,6 +916,9 @@ class GameEngine {
     this.obstacles = [];
     this.particles.forEach(p => p.active = false);
     this.updateHUD();
+    
+    // Freeze physics and wait for initial hand detection in camera mode
+    this.waitingForInitialHand = (this.input.mode === 'camera');
     
     // Spawn initial obstacles
     const targetObstacles = this.baseObstacleCount + this.level * 2;
@@ -1081,20 +1085,25 @@ class GameEngine {
       if (this.tracker.handDetected) {
         this.input.updateCameraCoords(this.tracker.latestX, this.tracker.latestY);
         
+        // Hand detected: clear initial wait state
+        if (this.waitingForInitialHand) {
+          this.waitingForInitialHand = false;
+        }
+        
         // Auto-resume if tracker recovered
         if (this.state === STATE_PAUSED_HAND_LOST) {
           this.setState(STATE_PLAYING);
         }
       } else {
-        // Tracker lost: pause game
-        if (this.state === STATE_PLAYING) {
+        // Tracker lost: pause game (only if NOT waiting for initial hand detection)
+        if (this.state === STATE_PLAYING && !this.waitingForInitialHand) {
           this.setState(STATE_PAUSED_HAND_LOST);
         }
       }
     }
 
     // 2. Play physics updates
-    if (this.state === STATE_PLAYING) {
+    if (this.state === STATE_PLAYING && !this.waitingForInitialHand) {
       // Update player (LERP smoothing towards targets)
       this.player.update(this.input.targetX, this.input.targetY, deltaTime);
       
@@ -1165,6 +1174,25 @@ class GameEngine {
         ctx.shadowBlur = 20;
         ctx.shadowColor = '#00f3ff';
         ctx.fillText(`LEVEL ${this.level} // INITIATED`, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 80);
+        ctx.restore();
+      }
+      // 6. Draw "Place hand to start" overlay if waiting for hand
+      if (this.waitingForInitialHand) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        ctx.fillStyle = '#00f3ff';
+        ctx.font = '800 2.2rem Outfit';
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#00f3ff';
+        ctx.fillText('PLACE HAND IN FRONT OF CAMERA TO START', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
+
+        ctx.font = '400 1.1rem Outfit';
+        ctx.fillStyle = '#a0aec0';
+        ctx.shadowBlur = 0;
+        ctx.fillText('Align your hand so the tracker detects your index finger tip', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 20);
         ctx.restore();
       }
     } else {
