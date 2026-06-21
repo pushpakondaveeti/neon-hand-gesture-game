@@ -73,9 +73,12 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchHealth = async () => {
+  const fetchHealth = async (overrideUrl) => {
     try {
-      const res = await fetch(getApiUrl("/api/health"));
+      const url = overrideUrl !== undefined 
+        ? (overrideUrl ? `${overrideUrl.replace(/\/$/, "")}/api/health` : "/api/health") 
+        : getApiUrl("/api/health");
+      const res = await fetch(url);
       const data = await res.json();
       if (data.mcp) {
         setHealth(data.mcp);
@@ -94,9 +97,12 @@ export default function App() {
     }
   };
 
-  const fetchTools = async () => {
+  const fetchTools = async (overrideUrl) => {
     try {
-      const res = await fetch(getApiUrl("/api/mcp/tools"));
+      const url = overrideUrl !== undefined 
+        ? (overrideUrl ? `${overrideUrl.replace(/\/$/, "")}/api/mcp/tools` : "/api/mcp/tools") 
+        : getApiUrl("/api/mcp/tools");
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setTools(data.tools || []);
@@ -239,11 +245,9 @@ export default function App() {
       if (data.success) {
         alert("Settings updated! MCP Client reconnected.");
         setShowSettings(false);
-        // Refresh with new URL
-        setTimeout(() => {
-          fetchHealth();
-          fetchTools();
-        }, 100);
+        // Refresh with new URL directly
+        fetchHealth(tempBackendUrl);
+        fetchTools(tempBackendUrl);
       } else {
         throw new Error(data.error);
       }
@@ -533,10 +537,8 @@ export default function App() {
                       localStorage.setItem("slack_assistant_backend_url", tempBackendUrl);
                       setBackendUrl(tempBackendUrl);
                       alert("Backend URL saved! Connecting...");
-                      setTimeout(() => {
-                        fetchHealth();
-                        fetchTools();
-                      }, 100);
+                      fetchHealth(tempBackendUrl);
+                      fetchTools(tempBackendUrl);
                     }}
                   >
                     Save URL
