@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "concurrently": "^8.2.2",
+    "eventsource": "^4.1.0",
     "serverless-http": "^4.0.0"
   }
 }
