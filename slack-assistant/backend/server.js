@@ -108,14 +108,14 @@ app.post("/api/settings/update", async (req, res) => {
   try {
     mcpClientManager.log("Updating environment settings dynamically...");
     
-    // Update active memory environment variables
+    // Update active memory environment variables (ignoring bullet placeholders)
     if (transport) process.env.SLACK_MCP_TRANSPORT = transport;
     if (command) process.env.SLACK_MCP_COMMAND = command;
     if (args) process.env.SLACK_MCP_ARGS = args;
-    if (botToken) process.env.SLACK_BOT_TOKEN = botToken;
-    if (appToken) process.env.SLACK_APP_TOKEN = appToken;
+    if (botToken && botToken !== "••••••••") process.env.SLACK_BOT_TOKEN = botToken;
+    if (appToken && appToken !== "••••••••") process.env.SLACK_APP_TOKEN = appToken;
     if (sseUrl) process.env.SLACK_MCP_SSE_URL = sseUrl;
-    if (geminiApiKey) process.env.GEMINI_API_KEY = geminiApiKey;
+    if (geminiApiKey && geminiApiKey !== "••••••••") process.env.GEMINI_API_KEY = geminiApiKey;
 
     mcpClientManager.log("Reconnecting MCP Client with new settings...");
     await mcpClientManager.disconnect();
