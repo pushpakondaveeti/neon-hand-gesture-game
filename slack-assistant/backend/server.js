@@ -64,9 +64,20 @@ app.get("/api/mcp/tools", async (req, res) => {
  * Route prompt queries through the Gemini LLM tool-routing loop
  */
 app.post("/api/chat", async (req, res) => {
-  const { prompt, history } = req.body;
+  const { prompt, history, settings } = req.body;
   if (!prompt) {
     return res.status(400).json({ success: false, error: "Prompt is required." });
+  }
+
+  if (settings) {
+    if (settings.transport) process.env.SLACK_MCP_TRANSPORT = settings.transport;
+    if (settings.command) process.env.SLACK_MCP_COMMAND = settings.command;
+    if (settings.args) process.env.SLACK_MCP_ARGS = settings.args;
+    if (settings.botToken && settings.botToken !== "••••••••") process.env.SLACK_BOT_TOKEN = settings.botToken;
+    if (settings.appToken && settings.appToken !== "••••••••") process.env.SLACK_APP_TOKEN = settings.appToken;
+    if (settings.sseUrl) process.env.SLACK_MCP_SSE_URL = settings.sseUrl;
+    if (settings.geminiApiKey && settings.geminiApiKey !== "••••••••") process.env.GEMINI_API_KEY = settings.geminiApiKey;
+    if (settings.geminiModel) process.env.GEMINI_MODEL = settings.geminiModel;
   }
 
   try {
@@ -83,10 +94,21 @@ app.post("/api/chat", async (req, res) => {
  * Executes the actual message posting after explicit user confirmation in the UI
  */
 app.post("/api/slack/send-confirm", async (req, res) => {
-  const { mcpTool, args } = req.body;
+  const { mcpTool, args, settings } = req.body;
   
   if (!mcpTool || !args) {
     return res.status(400).json({ success: false, error: "mcpTool and args are required." });
+  }
+
+  if (settings) {
+    if (settings.transport) process.env.SLACK_MCP_TRANSPORT = settings.transport;
+    if (settings.command) process.env.SLACK_MCP_COMMAND = settings.command;
+    if (settings.args) process.env.SLACK_MCP_ARGS = settings.args;
+    if (settings.botToken && settings.botToken !== "••••••••") process.env.SLACK_BOT_TOKEN = settings.botToken;
+    if (settings.appToken && settings.appToken !== "••••••••") process.env.SLACK_APP_TOKEN = settings.appToken;
+    if (settings.sseUrl) process.env.SLACK_MCP_SSE_URL = settings.sseUrl;
+    if (settings.geminiApiKey && settings.geminiApiKey !== "••••••••") process.env.GEMINI_API_KEY = settings.geminiApiKey;
+    if (settings.geminiModel) process.env.GEMINI_MODEL = settings.geminiModel;
   }
 
   try {

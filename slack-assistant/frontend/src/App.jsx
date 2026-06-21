@@ -146,7 +146,7 @@ export default function App() {
           "ngrok-skip-browser-warning": "true",
           "Bypass-Tunnel-Reminder": "true"
         },
-        body: JSON.stringify({ prompt: promptText, history })
+        body: JSON.stringify({ prompt: promptText, history, settings: settingsForm })
       });
       const data = await res.json();
 
@@ -197,7 +197,7 @@ export default function App() {
           "ngrok-skip-browser-warning": "true",
           "Bypass-Tunnel-Reminder": "true"
         },
-        body: JSON.stringify({ mcpTool, args })
+        body: JSON.stringify({ mcpTool, args, settings: settingsForm })
       });
       const data = await res.json();
 
