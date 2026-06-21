@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroGlow // Neon Finger-Tracking Arcade</title>
+  <meta name="description" content="Control a glowing cyber-avatar with your index finger using MediaPipe. Collect coins, avoid obstacles, and experience dynamic Web Audio synthesizer sounds.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Preload fonts for visual stability -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top HUD Bar -->
+    <header id="game-hud" class="glass-panel">
+      <div class="hud-group">
+        <span class="hud-label">SCORE</span>
+        <span id="score-val" class="hud-value neon-text-cyan">00000</span>
+      </div>
+      
+      <div id="lives-container" class="hud-group">
+        <span class="hud-label">LIVES</span>
+        <div class="lives-indicator">
+          <div class="live-dot glowing-dot"></div>
+          <div class="live-dot glowing-dot"></div>
+          <div class="live-dot glowing-dot"></div>
+        </div>
+      </div>
+
+      <div class="hud-group">
+        <span class="hud-label">LEVEL</span>
+        <span id="level-val" class="hud-value neon-text-gold">1</span>
+      </div>
+
+      <div class="hud-group system-stats">
+        <span id="fps-counter" class="hud-value stats-text">60 FPS</span>
+        <span id="input-status" class="hud-value stats-text">CAMERA: ACTIVE</span>
+      </div>
+
+      <div class="hud-group controls">
+        <button id="mute-btn" class="icon-btn" aria-label="Mute sound" title="Mute Audio">
+          <svg id="volume-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Canvas Area -->
+    <main id="canvas-container">
+      <canvas id="game-canvas"></canvas>
+    </main>
+
+    <!-- Floating Mirrored Video Preview in the corner -->
+    <div id="video-preview-container" class="glass-panel">
+      <video id="webcam-video" autoplay playsinline muted></video>
+      <canvas id="landmark-canvas"></canvas>
+      <div id="preview-overlay">
+        <span id="preview-mode-tag">CAM FEED</span>
+      </div>
+    </div>
+
+    <!-- UI Overlay Screens -->
+    <div id="screen-overlay" class="overlay-backdrop">
+      
+      <!-- 1. Loading Screen -->
+      <div id="loading-screen" class="overlay-card glass-panel">
+        <div class="logo-container">
+          <h1 class="neon-title neon-text-cyan">AEROGLOW</h1>
+          <p class="subtitle">NEON FINGER-TRACKING ARCADE</p>
+        </div>
+        <div class="loader-content">
+          <div class="spinner">
+            <div class="spinner-inner"></div>
+          </div>
+          <p id="loading-status">Booting system engines...</p>
+        </div>
+      </div>
+
+      <!-- 2. Start Screen -->
+      <div id="start-screen" class="overlay-card glass-panel hidden">
+        <h1 class="neon-title neon-text-magenta">AEROGLOW</h1>
+        <p class="tagline">Control your ship with your finger. Collect stars, dodge obstacles.</p>
+        
+        <div class="mode-selection">
+          <h3>CHOOSE CONTROL TYPE:</h3>
+          <div class="modes-grid">
+            <button id="mode-cam-btn" class="mode-btn active">
+              <span class="mode-title">Webcam Tracker</span>
+              <span class="mode-desc">Use index finger (recommended)</span>
+            </button>
+            <button id="mode-mouse-btn" class="mode-btn">
+              <span class="mode-title">Mouse / Touch</span>
+              <span class="mode-desc">Standard click & drag controls</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="cam-instructions" class="instructions-panel">
+          <h4>WEBCAM SETUP GUIDE</h4>
+          <ol>
+            <li>Grant camera permissions when prompted.</li>
+            <li>Stand 2 to 4 feet back in a well-lit room.</li>
+            <li>Show your **entire hand** (palm facing camera with wrist visible) to initialize tracking.</li>
+            <li>Once detected, steer the ship using your **index fingertip**.</li>
+          </ol>
+        </div>
+
+        <button id="play-btn" class="glow-btn">INITIALIZE SYSTEM</button>
+      </div>
+
+      <!-- Camera Error Screen -->
+      <div id="cam-error-screen" class="overlay-card glass-panel hidden">
+        <div class="pause-icon glowing-dot pulse" style="border-color: var(--neon-magenta); color: var(--neon-magenta)">!</div>
+        <h2 class="neon-text-magenta" style="font-size: 1.8rem; letter-spacing: 0.05em; margin-bottom: 8px;">CAMERA ACCESS FAILED</h2>
+        <p id="cam-error-message" class="tagline" style="margin-bottom: 18px; font-size: 0.9rem;">Webcam stream could not be started.</p>
+        
+        <div class="instructions-panel" style="margin-bottom: 25px; text-align: left; width: 100%;">
+          <h4 style="color: var(--neon-cyan); font-size: 0.75rem; letter-spacing: 0.1em; margin-bottom: 6px;">TROUBLESHOOTING CHECKS:</h4>
+          <ol style="font-size: 0.75rem; padding-left: 16px; line-height: 1.5; color: #a0aec0;">
+            <li><strong>Allow Camera:</strong> Click the camera icon in your browser's address bar (or padlock icon) and ensure permissions are set to <strong>Allow</strong>.</li>
+            <li><strong>Close Other Apps:</strong> Ensure Zoom, FaceTime, Teams, or other tabs aren't currently using the webcam.</li>
+            <li><strong>Secure Context:</strong> Verify you are on <code>http://localhost:8080</code>. Browsers block cameras on insecure IP addresses.</li>
+          </ol>
+        </div>
+
+        <div style="display: flex; gap: 15px; width: 100%; max-width: 400px;">
+          <button id="cam-error-retry-btn" class="glow-btn" style="flex: 1; padding: 12px 15px; font-size: 0.85rem; border-radius: 8px;">RETRY CAMERA</button>
+          <button id="cam-error-mouse-btn" class="glow-btn" style="flex: 1; border-color: var(--neon-gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); padding: 12px 15px; font-size: 0.85rem; border-radius: 8px;">PLAY WITH MOUSE</button>
+        </div>
+      </div>
+
+      <!-- 3. Pause Screen / Hand Lost Screen -->
+      <div id="pause-screen" class="overlay-card glass-panel hidden">
+        <div class="pause-icon glowing-dot pulse">!</div>
+        <h2 class="neon-text-gold pulse-text">TRACKING INTERRUPTED</h2>
+        <p id="pause-message">Show your **entire hand** (palm facing camera) to resume control</p>
+        <button id="manual-resume-btn" class="glow-btn hidden">RESUME PLAY</button>
+      </div>
+
+      <!-- 4. Game Over Screen -->
+      <div id="game-over-screen" class="overlay-card glass-panel hidden">
+        <h2 class="neon-text-magenta game-over-title">SYSTEM OFFLINE</h2>
+        <p class="game-over-subtitle">YOUR CORE REPLICA COLLAPSED</p>
+        
+        <div class="results-grid">
+          <div class="result-box">
+            <span class="result-label">FINAL SCORE</span>
+            <span id="final-score" class="result-value neon-text-cyan">0</span>
+          </div>
+          <div class="result-box">
+            <span class="result-label">HIGH SCORE</span>
+            <span id="high-score" class="result-value neon-text-gold">0</span>
+          </div>
+          <div class="result-box">
+            <span class="result-label">LEVEL ACHIEVED</span>
+            <span id="final-level" class="result-value">1</span>
+          </div>
+        </div>
+
+        <button id="restart-btn" class="glow-btn animate-glow">REBOOT SHIP</button>
+      </div>
+
+    <!-- Diagnostics Overlay -->
+    <div id="diagnostics-panel" class="glass-panel collapsed">
+      <div id="diag-header">
+        <span class="hud-label" style="font-size: 0.55rem; color: var(--neon-cyan); letter-spacing: 0.1em; margin: 0;">SYSTEM DIAGNOSTICS</span>
+        <button id="diag-toggle-btn">SHOW</button>
+      </div>
+      <div id="diag-content" class="hidden">
+        <div class="diag-line"><span>ACCELERATION:</span> <span id="diag-system">DETECTING</span></div>
+        <div class="diag-line"><span>WEBCAM RES:</span> <span id="diag-cam-res">0x0</span></div>
+        <div class="diag-line"><span>READY STATE:</span> <span id="diag-ready-state">0</span></div>
+        <div class="diag-line"><span>INFERENCE TIME:</span> <span id="diag-inf-time">0 ms</span></div>
+        <div class="diag-line"><span>TRACKING STATE:</span> <span id="diag-track-state">OFFLINE</span></div>
+        <div class="diag-line"><span>ERROR LOG:</span> <span id="diag-errors" style="color: var(--neon-magenta); word-break: break-all; text-align: right; max-width: 140px;">NONE</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

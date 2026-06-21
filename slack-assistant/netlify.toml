@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build --prefix frontend"
+  publish = "frontend/dist"
+  functions = "netlify/functions"
+
+# Proxy frontend API requests to our Netlify Serverless Function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/api/:splat"
+  status = 200
+
+# Support standard single-page React router path history fallbacks
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

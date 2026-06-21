@@ -1,0 +1,23 @@
+# Package dependencies
+node_modules/
+**/node_modules/
+
+# Local environment secrets (contains API keys and Slack tokens!)
+.env
+**/.env
+
+# OS metadata
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+**/dist/
+build/
+
+# Logs and diagnostics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
