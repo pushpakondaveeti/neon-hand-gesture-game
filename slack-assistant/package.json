@@ -9,6 +9,7 @@
     "dev": "npx concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
   },
   "dependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "serverless-http": "^4.0.0"
   }
 }
