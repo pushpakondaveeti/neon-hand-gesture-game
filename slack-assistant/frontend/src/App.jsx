@@ -78,7 +78,9 @@ export default function App() {
       const url = overrideUrl !== undefined 
         ? (overrideUrl ? `${overrideUrl.replace(/\/$/, "")}/api/health` : "/api/health") 
         : getApiUrl("/api/health");
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: { "ngrok-skip-browser-warning": "true" }
+      });
       const data = await res.json();
       if (data.mcp) {
         setHealth(data.mcp);
@@ -102,7 +104,9 @@ export default function App() {
       const url = overrideUrl !== undefined 
         ? (overrideUrl ? `${overrideUrl.replace(/\/$/, "")}/api/mcp/tools` : "/api/mcp/tools") 
         : getApiUrl("/api/mcp/tools");
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: { "ngrok-skip-browser-warning": "true" }
+      });
       const data = await res.json();
       if (data.success) {
         setTools(data.tools || []);
@@ -129,7 +133,10 @@ export default function App() {
     try {
       const res = await fetch(getApiUrl("/api/chat"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
+        },
         body: JSON.stringify({ prompt: promptText, history })
       });
       const data = await res.json();
@@ -176,7 +183,10 @@ export default function App() {
     try {
       const res = await fetch(getApiUrl("/api/slack/send-confirm"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
+        },
         body: JSON.stringify({ mcpTool, args })
       });
       const data = await res.json();
@@ -238,7 +248,10 @@ export default function App() {
 
       const res = await fetch(updateEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
+        },
         body: JSON.stringify(settingsForm)
       });
       const data = await res.json();
