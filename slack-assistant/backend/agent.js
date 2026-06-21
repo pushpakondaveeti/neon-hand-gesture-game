@@ -13,7 +13,8 @@ async function callGemini(contents, systemInstruction, forceJson = true) {
     throw new Error("GEMINI_API_KEY is not defined in the environment.");
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
   
   const body = {
     contents,

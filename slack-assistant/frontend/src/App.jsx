@@ -53,7 +53,8 @@ export default function App() {
     botToken: "",
     appToken: "",
     sseUrl: "http://localhost:3010/sse",
-    geminiApiKey: ""
+    geminiApiKey: "",
+    geminiModel: "gemini-1.5-flash"
   });
 
   const chatEndRef = useRef(null);
@@ -93,7 +94,8 @@ export default function App() {
           transport: data.mcp.transport || prev.transport,
           botToken: data.env.botTokenSet ? "••••••••" : prev.botToken,
           appToken: data.env.appTokenSet ? "••••••••" : prev.appToken,
-          geminiApiKey: data.env.geminiApiKeySet ? "••••••••" : prev.geminiApiKey
+          geminiApiKey: data.env.geminiApiKeySet ? "••••••••" : prev.geminiApiKey,
+          geminiModel: data.env.geminiModel || prev.geminiModel
         }));
       }
     } catch (err) {
@@ -574,6 +576,11 @@ export default function App() {
               <div className="form-group">
                 <label>GEMINI API KEY</label>
                 <input type="password" value={settingsForm.geminiApiKey} onChange={(e) => setSettingsForm({ ...settingsForm, geminiApiKey: e.target.value })} placeholder="Keep empty to preserve current value" />
+              </div>
+
+              <div className="form-group">
+                <label>GEMINI MODEL NAME</label>
+                <input type="text" value={settingsForm.geminiModel} onChange={(e) => setSettingsForm({ ...settingsForm, geminiModel: e.target.value })} placeholder="e.g. gemini-1.5-flash, gemini-2.0-flash, gemini-1.5-pro" />
               </div>
 
               <div className="form-group">

@@ -40,7 +40,8 @@ app.get("/api/health", (req, res) => {
     env: {
       geminiApiKeySet: !!process.env.GEMINI_API_KEY,
       botTokenSet: !!process.env.SLACK_BOT_TOKEN,
-      appTokenSet: !!process.env.SLACK_APP_TOKEN
+      appTokenSet: !!process.env.SLACK_APP_TOKEN,
+      geminiModel: process.env.GEMINI_MODEL || "gemini-1.5-flash"
     }
   });
 });
@@ -103,7 +104,7 @@ app.post("/api/slack/send-confirm", async (req, res) => {
  * Updates transport configurations dynamically from the frontend settings panel
  */
 app.post("/api/settings/update", async (req, res) => {
-  const { transport, command, args, botToken, appToken, sseUrl, geminiApiKey } = req.body;
+  const { transport, command, args, botToken, appToken, sseUrl, geminiApiKey, geminiModel } = req.body;
 
   try {
     mcpClientManager.log("Updating environment settings dynamically...");
@@ -116,6 +117,7 @@ app.post("/api/settings/update", async (req, res) => {
     if (appToken && appToken !== "••••••••") process.env.SLACK_APP_TOKEN = appToken;
     if (sseUrl) process.env.SLACK_MCP_SSE_URL = sseUrl;
     if (geminiApiKey && geminiApiKey !== "••••••••") process.env.GEMINI_API_KEY = geminiApiKey;
+    if (geminiModel) process.env.GEMINI_MODEL = geminiModel;
 
     mcpClientManager.log("Reconnecting MCP Client with new settings...");
     await mcpClientManager.disconnect();
